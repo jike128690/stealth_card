@@ -1,0 +1,75 @@
+# StealthCard 卡片模板配置
+# 皮肤定义背景色、边框色与默认字体；模板按 ID 绑定皮肤并定义正反面 HTML 骨架
+# 语法：{{列名}} 变量插值，{{#if 列名}}...{{/if}} 条件块（单元格为空时整块剔除）
+
+skins:
+  excel_comment:                  # Excel 批注风：Excel 与 WPS 表格
+    bg_color: "#FFFFE1"
+    border_color: "#D4D4D4"
+    font_family: "Microsoft YaHei"
+  web_blank:                      # 网页留白风：Chrome 与 Edge
+    bg_color: "#FFFFFF"
+    border_color: null
+    font_family: "Calibri"
+  system_notify:                  # 系统通知风：桌面右下角状态区
+    bg_color: "#F8F9FA"
+    border_color: "#DADCE0"
+    font_family: "Microsoft YaHei"
+
+templates:
+  tech_qa:
+    style:
+      skin: "excel_comment"
+      bg_color: "#FFFFE1"
+      border_color: "#D4D4D4"
+    front: |
+      <div style="color:#333333; font-size:12px;">
+        <b>[批注]</b> {{title}}
+        {{#if tag}}<span style="color:#888888;"> ({{tag}})</span>{{/if}}
+      </div>
+    back: |
+      <div style="color:#333333; font-size:12px; line-height:1.4;">
+        <div><b>核心：</b>{{core}}</div>
+        {{#if detail}}<div style="color:#555555; margin-top:3px;">{{detail}}</div>{{/if}}
+        {{#if trick}}<div style="color:#2b579a; margin-top:3px;"><i>口诀：{{trick}}</i></div>{{/if}}
+      </div>
+
+  vocab:
+    style:
+      skin: "web_blank"
+    front: |
+      <div style="color:#333333; font-size:13px;">
+        <b>{{word}}</b>
+        {{#if phonetic}}<span style="color:#70757A;"> /{{phonetic}}/</span>{{/if}}
+      </div>
+    back: |
+      <div style="color:#333333; font-size:12px; line-height:1.4;">
+        <div>{{meaning}}</div>
+        {{#if example}}<div style="color:#555555; margin-top:3px; font-style:italic;">{{example}}</div>{{/if}}
+      </div>
+
+  cmd_cheat:
+    style:
+      skin: "system_notify"
+    front: |
+      <div style="color:#3C4043; font-size:12px;">
+        <b>{{command}}</b>
+        {{#if purpose}}<span style="color:#70757A;"> — {{purpose}}</span>{{/if}}
+      </div>
+    back: |
+      <div style="color:#3C4043; font-size:12px; line-height:1.4;">
+        <div><b>用法：</b>{{example}}</div>
+        {{#if note}}<div style="color:#2b579a; margin-top:3px;">{{note}}</div>{{/if}}
+      </div>
+
+  capture:
+    style:
+      skin: "system_notify"
+    front: |
+      <div style="color:#333333; font-size:12px;">
+        <b>[摘录]</b> {{title}}
+      </div>
+    back: |
+      <div style="color:#333333; font-size:12px; line-height:1.4;">
+        {{content}}
+      </div>

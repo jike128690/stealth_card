@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 构建产物
+stealth_card/build/
+stealth_card/dist/
+stealth_card/build_env/
+stealth_card/build_log.txt
+
+# 运行期状态（首启自动生成）
+stealth_card/data/progress.db
+stealth_card/data/progress.db-*
+stealth_card/data/app.log
+stealth_card/data/app.log.*
+
+# 工具临时目录
+.qwen/

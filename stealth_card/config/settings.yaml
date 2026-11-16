@@ -1,0 +1,38 @@
+# StealthCard 全局配置：热键绑定、闲置秒数、进程白名单、防投屏开关
+# 修改保存后 1 秒内自动热重载（热键绑定修改除外，需重启程序生效）
+
+appearance:
+  default_skin: excel_comment      # 全局默认皮肤：excel_comment / web_blank / system_notify
+  width: 300                       # 默认宽度锁定 300 像素
+  collapsed_height: 45             # 折叠态高度 45 像素
+  expanded_height_min: 140         # 展开态最小高度
+  expanded_height_max: 180         # 展开态最大高度
+  window_opacity: 0.9              # 手动唤出时的不透明度（0.65–0.95）
+  auto_popup_opacity: 0.65         # 闲置自动浮现时的低透明度
+  margin_right: 24                 # 距屏幕右缘像素
+  margin_bottom: 24                # 距屏幕下缘像素
+
+hotkeys:                           # pynput 组合键语法
+  toggle_expand: "<alt>+<space>"   # 折叠时展开背面，展开时标记已读并下一张
+  next_card: "<alt>+j"             # 下一张卡片
+  prev_card: "<alt>+k"             # 上一张卡片
+  mark_unfamiliar: "<alt>+m"       # 标记生疏
+  quick_capture: "<alt>+c"         # 剪贴板划词摘录
+  toggle_penetrate: "<alt>+t"      # 切换鼠标穿透 / 位置调节
+  boss_key: "<alt>+h"              # 老板键显隐
+
+behavior:
+  idle_seconds: 15                 # 闲置自动浮现阈值（秒）
+  poll_interval_ms: 500            # 前台进程与键鼠状态轮询间隔
+  mouse_jump_pixels: 700           # 500ms 内光标位移超过该值判定为“大幅度快速移动”
+  intervals_minutes: [10, 720, 4320]  # 熟练度 0/1/2 对应的下次复习间隔（分钟）
+  capture_sheet: capture           # 划词摘录写入的工作表（同时作为模板 ID）
+
+security:
+  anti_capture: true               # 防投屏与防截图隔离
+  click_through_default: true      # 启动即进入幽灵鼠标穿透态
+  process_whitelist: [chrome, msedge, excel, et]   # 仅这些前台进程允许显示卡片
+  decoy_texts:                     # 变色龙假文案替身（按宿主环境）
+    excel: "#N/A 引用区域存在文本型数字，建议执行分列校验"
+    browser: "[Cache] 静态资源哈希校验完成，DOM 渲染耗时 18ms"
+    default: "正在同步最近使用的文件索引…"
