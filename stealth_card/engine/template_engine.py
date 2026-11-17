@@ -75,6 +75,7 @@ class TemplateEngine:
             "bg_color": skin.get("bg_color", "#FFFFE1"),
             "border_color": skin.get("border_color"),
             "font_family": skin.get("font_family", "Microsoft YaHei"),
+            "text_bg_color": skin.get("text_bg_color"),
         }
         if style.get("bg_color"):
             resolved["bg_color"] = style["bg_color"]
@@ -82,6 +83,8 @@ class TemplateEngine:
             resolved["border_color"] = style["border_color"]
         if style.get("font_family"):
             resolved["font_family"] = style["font_family"]
+        if style.get("text_bg_color"):
+            resolved["text_bg_color"] = style["text_bg_color"]
         return resolved
 
     def _render(self, source: str, fields: dict) -> str:

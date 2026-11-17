@@ -3,10 +3,15 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
+# 虚拟环境
+.venv/
+venv/
+stealth_card/build_env/
+env/
+
 # 构建产物
 stealth_card/build/
 stealth_card/dist/
-stealth_card/build_env/
 stealth_card/build_log.txt
 
 # 运行期状态（首启自动生成）
@@ -14,6 +19,18 @@ stealth_card/data/progress.db
 stealth_card/data/progress.db-*
 stealth_card/data/app.log
 stealth_card/data/app.log.*
+stealth_card/data/window_pos.json
+
+# 本地备份
+*.bak
+*.bak-*
+*.bak[0-9]-*
+
+# 编辑器与系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 
 # 工具临时目录
 .qwen/

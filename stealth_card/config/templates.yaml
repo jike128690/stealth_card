@@ -7,14 +7,17 @@ skins:
     bg_color: "#FFFFE1"
     border_color: "#D4D4D4"
     font_family: "Microsoft YaHei"
+    text_bg_color: "#FFD966"      # 文字底色（高亮），留空则不加
   web_blank:                      # 网页留白风：Chrome 与 Edge
     bg_color: "#FFFFFF"
     border_color: null
     font_family: "Calibri"
+    text_bg_color: "#FFF2CC"
   system_notify:                  # 系统通知风：桌面右下角状态区
     bg_color: "#F8F9FA"
     border_color: "#DADCE0"
     font_family: "Microsoft YaHei"
+    text_bg_color: "#FFF2CC"
 
 templates:
   tech_qa:

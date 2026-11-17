@@ -1,6 +1,6 @@
 # StealthCard · 办公环境隐蔽式碎片化卡片学习系统
 
-面向 Windows 桌面端的轻量知识卡片悬浮窗：寄生于浏览器与表格办公环境，通过原生办公组件拟态、系统级防截屏隔离、双模态鼠标穿透与 YAML/Excel 模板引擎，实现高隐蔽性的碎片化学习体验。
+面向 Windows 桌面端的轻量知识卡片悬浮窗：全屏幕常驻显示、文字背景板醒目呈现、任意位置可拖动，通过原生办公组件拟态、系统级防截屏隔离与 YAML/Excel 模板引擎，实现碎片化学习体验。
 
 严格按仓库根目录的《需求规格文档.md》与《开发计划文档.md》实现。
 
@@ -21,17 +21,20 @@ set STEALTHCARD_EXIT_AFTER=8 && python main.py
 
 ## 全局热键
 
+选用 `Alt + 单个字母/符号` 两键组合，避开系统与办公软件常用快捷键。
+
 | 快捷键 | 动作 | 状态流转 |
 | --- | --- | --- |
-| Alt + Space | 展开或下一张 | 折叠态展开背面；展开态标记已读并切至下一张 |
+| Alt + O | 展开或下一张 | 折叠态展开背面；展开态标记已读并切至下一张 |
 | Alt + J | 下一张卡片 | 跳过当前卡片，切换至下一张折叠态 |
 | Alt + K | 上一张卡片 | 回退至上一张卡片折叠态 |
-| Alt + M | 标记生疏度 | 熟练度归零，缩短下次复习间隔 |
+| Alt + U | 标记生疏度 | 熟练度归零，缩短下次复习间隔 |
 | Alt + C | 全局划词摘录 | 读取剪贴板写入题库 `capture` 表并生成新卡片 |
-| Alt + T | 切换鼠标穿透 | 幽灵穿透态 ↔ 位置调节锁定态（高亮边框、可拖动） |
-| Alt + H | 全局老板键 | 瞬间隐藏，再次按下恢复 |
+| Alt + B | 全局老板键 | 瞬间隐藏，再次按下恢复 |
+| Alt + ] | 提高不透明度 | 每次 +5%，上限 100% |
+| Alt + [ | 降低不透明度 | 每次 -5%，下限 25% |
 
-热键在 `config/settings.yaml` 的 `hotkeys` 段集中配置（修改后需重启生效）。
+热键在 `config/settings.yaml` 的 `hotkeys` 段集中配置（修改后需重启生效）。窗口任意位置按住左键拖动即可移动，位置与透明度自动保存到 `data/window_pos.json`，下次启动恢复。
 
 ## 目录结构
 
@@ -40,14 +43,13 @@ stealth_card/
 ├── main.py                  # 程序入口：单实例锁、全局异常捕获、事件循环初始化
 ├── paths.py                 # 外部资源路径解耦（开发计划 3.1）
 ├── config/
-│   ├── settings.yaml        # 热键、闲置秒数、进程白名单、防投屏开关、伪装文案
-│   └── templates.yaml       # 皮肤与卡片正反面 HTML 模板
+│   ├── settings.yaml        # 热键、复习间隔、防投屏开关
+│   └── templates.yaml       # 皮肤（含文字背景板底色）与卡片正反面 HTML 模板
 ├── data/
 │   ├── cards.xlsx           # 多 Sheet 题库（含示例数据，可直接用 Excel 编辑）
 │   └── progress.db          # SQLite WAL 学习进度（首次运行自动生成）
 ├── core/
-│   ├── win_stealth.py       # Win32：互斥锁、防投屏、穿透、闲置、前台进程/光标
-│   ├── process_watcher.py   # 前台进程白名单比对服务
+│   ├── win_stealth.py       # Win32：互斥锁、防投屏
 │   ├── hotkey_bus.py        # pynput 全局热键 + 跨线程 Qt 信号总线
 │   └── file_watcher.py      # watchdog 热重载监听（300ms 防抖）
 ├── engine/
@@ -55,7 +57,7 @@ stealth_card/
 │   ├── excel_loader.py      # Excel/CSV 加载、缺失值过滤、剪贴板摘录追加写入
 │   └── scheduler.py         # SQLite WAL 状态表、熟练度间隔、抽题队列
 ├── ui/
-│   └── card_overlay.py      # 无边框悬浮卡片、折叠/展开/伪装状态机与动画
+│   └── card_overlay.py      # 无边框悬浮卡片、折叠/展开动画、任意位置拖动
 ├── tests/                   # unittest 测试套件
 ├── build.spec               # PyInstaller 6 定制配置（伪装版 + 瘦身排除）
 ├── version_info.txt         # EXE 版本信息伪装（Runtime Broker Host Service）
@@ -74,10 +76,8 @@ stealth_card/
 
 - 无边框 + `Qt.Tool` + `WS_EX_TOOLWINDOW` + `WindowDoesNotAcceptFocus`：无标题栏、无任务栏图标、不抢焦点。
 - `SetWindowDisplayAffinity(0x11)`：物理显示屏可见，截屏/投屏画面被系统跳过（旧系统自动降级 `WDA_MONITOR`）。
-- 默认 `WS_EX_TRANSPARENT` 幽灵穿透：点击、滚轮 100% 穿透至底层 Excel/浏览器；`Alt+T` 切换为可拖动调节态。
-- 前台进程白名单（chrome / msedge / excel / et）：切入微信、钉钉、资源管理器即时隐藏。
-- 闲置 ≥15 秒且前台在白名单内自动低透明度浮现；敲击键盘瞬间隐藏；鼠标大幅快速移动切换为工作伪装文案。
-- 单实例互斥锁：重复双击不产生第二个幽灵进程。
+- 文字背景板：皮肤可为正反面文字垫高亮底色（`text_bg_color`），全屏幕任意软件前台均可见。
+- 任意位置按住左键即可拖动窗口；单实例互斥锁：重复双击不产生第二个进程。
 
 ## 打包 EXE
 

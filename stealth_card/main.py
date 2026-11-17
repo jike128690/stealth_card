@@ -6,7 +6,6 @@
 
 import logging
 import logging.handlers
-import math
 import os
 import sys
 
@@ -16,7 +15,6 @@ from PyQt5.QtWidgets import QApplication
 
 from core.file_watcher import HotReloadWatcher
 from core.hotkey_bus import HotkeyService, SignalBus
-from core.process_watcher import ProcessWatcher
 from core.win_stealth import WinStealthController
 from engine.excel_loader import append_card, load_cards
 from engine.scheduler import Scheduler
@@ -31,38 +29,28 @@ _DEFAULTS = {
         "default_skin": "excel_comment",
         "width": 300,
         "collapsed_height": 45,
-        "expanded_height_min": 140,
-        "expanded_height_max": 180,
+        "expanded_height_min": 230,
+        "expanded_height_max": 450,
         "window_opacity": 0.9,
-        "auto_popup_opacity": 0.65,
-        "margin_right": 24,
-        "margin_bottom": 24,
+        "margin_right": 30,
+        "margin_bottom": 70,
     },
     "hotkeys": {
-        "toggle_expand": "<alt>+<space>",
+        "toggle_expand": "<alt>+o",
         "next_card": "<alt>+j",
         "prev_card": "<alt>+k",
-        "mark_unfamiliar": "<alt>+m",
+        "mark_unfamiliar": "<alt>+u",
         "quick_capture": "<alt>+c",
-        "toggle_penetrate": "<alt>+t",
-        "boss_key": "<alt>+h",
+        "boss_key": "<alt>+b",
+        "opacity_up": "<alt>+]",
+        "opacity_down": "<alt>+[",
     },
     "behavior": {
-        "idle_seconds": 15,
-        "poll_interval_ms": 500,
-        "mouse_jump_pixels": 700,
         "intervals_minutes": [10, 720, 4320],
         "capture_sheet": "capture",
     },
     "security": {
         "anti_capture": True,
-        "click_through_default": True,
-        "process_whitelist": ["chrome", "msedge", "excel", "et"],
-        "decoy_texts": {
-            "excel": "#N/A 引用区域存在文本型数字，建议执行分列校验",
-            "browser": "[Cache] 静态资源哈希校验完成，DOM 渲染耗时 18ms",
-            "default": "正在同步最近使用的文件索引…",
-        },
     },
 }
 
@@ -126,14 +114,10 @@ class AppController(QObject):
             self._db_path,
             self.settings["behavior"].get("intervals_minutes", [10, 720, 4320]),
         )
-        self.watcher = ProcessWatcher(
-            self.settings["security"].get("process_whitelist", [])
-        )
 
         self._cards = []
         self._queue = []
         self._index = 0
-        self._cursor = WinStealthController.get_cursor_pos()
 
         self._hotkeys = HotkeyService(self.bus, self.settings.get("hotkeys") or {})
         self._hotkeys.start()
@@ -150,15 +134,8 @@ class AppController(QObject):
         self._load_cards_from_disk()
         self._rebuild_queue()
 
-        self._env_timer = QTimer(self)
-        self._env_timer.setInterval(
-            int(self.settings["behavior"].get("poll_interval_ms", 500))
-        )
-        self._env_timer.timeout.connect(self._poll_environment)
-        self._env_timer.start()
-
         self._show_current()
-        self.overlay.reveal(auto=False)
+        self.overlay.reveal()
         log.info("StealthCard 启动完成：%d 张卡片", len(self._queue))
 
     # ---------- 信号接线 ----------
@@ -169,10 +146,10 @@ class AppController(QObject):
         self.bus.sig_prev_card.connect(self._on_prev_card)
         self.bus.sig_mark_unfamiliar.connect(self._on_mark_unfamiliar)
         self.bus.sig_quick_capture.connect(self._on_quick_capture)
-        self.bus.sig_toggle_penetrate.connect(self._on_toggle_penetrate)
         self.bus.sig_boss_key.connect(self._on_boss_key)
+        self.bus.sig_opacity_up.connect(self._on_opacity_up)
+        self.bus.sig_opacity_down.connect(self._on_opacity_down)
         self.bus.sig_reload_files.connect(self._on_reload_files)
-        self.bus.sig_keyboard_activity.connect(self.overlay.on_keyboard_activity)
 
     # ---------- 卡片队列 ----------
 
@@ -272,11 +249,14 @@ class AppController(QObject):
         self._show_current()
         log.info("已摘录并生成新卡片：%s", title)
 
-    def _on_toggle_penetrate(self):
-        self.overlay.set_penetration(not self.overlay.is_penetrating())
-
     def _on_boss_key(self):
         self.overlay.toggle_boss_key()
+
+    def _on_opacity_up(self):
+        self.overlay.adjust_opacity(0.05)
+
+    def _on_opacity_down(self):
+        self.overlay.adjust_opacity(-0.05)
 
     # ---------- 热重载 ----------
 
@@ -291,12 +271,6 @@ class AppController(QObject):
         self.engine = TemplateEngine(_load_yaml(self._templates_path))
         self.overlay.set_engine(self.engine)
         self.overlay.apply_settings(self.settings)
-        self.watcher.update_whitelist(
-            self.settings["security"].get("process_whitelist", [])
-        )
-        self._env_timer.setInterval(
-            int(self.settings["behavior"].get("poll_interval_ms", 500))
-        )
 
         self._load_cards_from_disk()
         self._queue = self.scheduler.build_queue(self._cards, self._hash_of)
@@ -311,45 +285,9 @@ class AppController(QObject):
             log.warning("热键绑定已修改，重启程序后生效")
         log.info("热重载完成：%d 张卡片", len(self._queue))
 
-    # ---------- 环境感知 ----------
-
-    def _poll_environment(self):
-        info = self.watcher.snapshot()
-        cursor = WinStealthController.get_cursor_pos()
-        jumped = False
-        if cursor is not None and self._cursor is not None:
-            dx = cursor[0] - self._cursor[0]
-            dy = cursor[1] - self._cursor[1]
-            threshold = float(
-                self.settings["behavior"].get("mouse_jump_pixels", 700)
-            )
-            if math.hypot(dx, dy) >= threshold:
-                jumped = True
-        self._cursor = cursor
-
-        idle_needed = float(self.settings["behavior"].get("idle_seconds", 15))
-        self.overlay.environment_update(
-            allowed=info["allowed"],
-            idle_enough=info["idle_seconds"] >= idle_needed,
-            cursor_jumped=jumped,
-            decoy_env=self._decoy_env_for(info["process"]),
-        )
-
-    @staticmethod
-    def _decoy_env_for(process_name: str) -> str:
-        name = (process_name or "").strip().lower()
-        if name.endswith(".exe"):
-            name = name[:-4]
-        if name in ("excel", "et", "wps", "wpp", "kspread"):
-            return "excel"
-        if name in ("chrome", "msedge", "firefox", "brave", "opera"):
-            return "browser"
-        return "default"
-
     # ---------- 生命周期 ----------
 
     def shutdown(self):
-        self._env_timer.stop()
         self._file_watcher.stop()
         self._hotkeys.stop()
         self.scheduler.close()

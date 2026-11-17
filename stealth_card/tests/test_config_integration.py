@@ -21,7 +21,7 @@ class ConfigIntegrationTest(unittest.TestCase):
     def test_settings_hotkeys_all_valid(self):
         settings = self._load(os.path.join("config", "settings.yaml"))
         hotkeys = settings["hotkeys"]
-        self.assertEqual(len(hotkeys), 7)
+        self.assertEqual(len(hotkeys), 8)
         for action, combo in hotkeys.items():
             with self.subTest(action=action):
                 keyboard.HotKey.parse(combo)  # 语法非法会抛出 ValueError
