@@ -107,13 +107,19 @@ class CardOverlay(QWidget):
         self._engine = engine
 
     def _apply_skin(self):
-        bg_color = self._style.get("bg_color", "#FFFFE1")
+        bg_color = self._style.get("bg_color", "#141a26")
+        bg_gradient = self._style.get("bg_gradient")
         border_color = self._style.get("border_color")
         font_family = self._style.get("font_family", "Microsoft YaHei")
+        radius = int(self._style.get("radius") or 0)
+        text_color = self._style.get("text_color", "#e6e9f0")
         border_css = f"1px solid {border_color}" if border_color else "none"
+        background_css = bg_gradient or bg_color
+        radius_css = f" border-radius: {radius}px;" if radius else ""
         self.setStyleSheet(
-            f"CardOverlay {{ background-color: {bg_color}; border: {border_css}; }}"
-            f"QLabel {{ background: transparent; color: #333333; font-size: 12px;"
+            f"CardOverlay {{ background: {background_css}; border: {border_css};"
+            f"{radius_css} }}"
+            f"QLabel {{ background: transparent; color: {text_color}; font-size: 12px;"
             f" font-family: '{font_family}'; }}"
         )
 

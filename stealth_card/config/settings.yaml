@@ -2,7 +2,7 @@
 # 修改保存后 1 秒内自动热重载（热键绑定修改除外，需重启程序生效）
 
 appearance:
-  default_skin: excel_comment      # 全局默认皮肤：excel_comment / web_blank / system_notify
+  default_skin: dark_tech          # 全局默认皮肤：dark_tech / excel_comment / web_blank / system_notify
   width: 300                       # 默认宽度锁定 300 像素
   collapsed_height: 45             # 折叠态高度 45 像素
   expanded_height_min: 230         # 展开态最小高度

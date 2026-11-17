@@ -1,8 +1,18 @@
 # StealthCard 卡片模板配置
-# 皮肤定义背景色、边框色与默认字体；模板按 ID 绑定皮肤并定义正反面 HTML 骨架
+# 皮肤定义背景/渐变、边框、圆角与文字色；模板按 ID 绑定皮肤并定义正反面 HTML 骨架
 # 语法：{{列名}} 变量插值，{{#if 列名}}...{{/if}} 条件块（单元格为空时整块剔除）
+# abbr 模板额外支持 cat 字段（concept/reg/clk/bus），自动注入 cat_label/cat_color/cat_bg 分类徽标
 
 skins:
+  dark_tech:                      # 深蓝暗色科技风（默认）：渐变卡片 + 20px 圆角
+    bg_color: "#141a26"
+    bg_gradient: "qlineargradient(x1:0, y1:0, x2:0.15, y2:1, stop:0 #1b2435, stop:1 #141a26)"
+    border_color: "#263041"
+    font_family: "Microsoft YaHei"
+    radius: 20
+    text_color: "#e6e9f0"
+    muted_color: "#9aa3b5"
+    accent_color: "#38bdf8"
   excel_comment:                  # Excel 批注风：Excel 与 WPS 表格
     bg_color: "#FFFFE1"
     border_color: "#D4D4D4"
@@ -22,57 +32,69 @@ skins:
 templates:
   tech_qa:
     style:
-      skin: "excel_comment"
-      bg_color: "#FFFFE1"
-      border_color: "#D4D4D4"
+      skin: "dark_tech"
     front: |
-      <div style="color:#333333; font-size:12px;">
-        <b>[批注]</b> {{title}}
-        {{#if tag}}<span style="color:#888888;"> ({{tag}})</span>{{/if}}
+      <div style="color:#e6e9f0; font-size:13px;">
+        <span style="color:#38bdf8;"><b>[批注]</b></span> {{title}}
+        {{#if tag}}<span style="color:#9aa3b5;"> · {{tag}}</span>{{/if}}
       </div>
     back: |
-      <div style="color:#333333; font-size:12px; line-height:1.4;">
-        <div><b>核心：</b>{{core}}</div>
-        {{#if detail}}<div style="color:#555555; margin-top:3px;">{{detail}}</div>{{/if}}
-        {{#if trick}}<div style="color:#2b579a; margin-top:3px;"><i>口诀：{{trick}}</i></div>{{/if}}
+      <div style="color:#e6e9f0; font-size:13px; line-height:1.6;">
+        <div><span style="color:#38bdf8;"><b>核心</b></span> {{core}}</div>
+        {{#if detail}}<div style="color:#9aa3b5; margin-top:4px;">{{detail}}</div>{{/if}}
+        {{#if trick}}<div style="color:#fbbf24; margin-top:4px;"><i>口诀：{{trick}}</i></div>{{/if}}
       </div>
 
   vocab:
     style:
-      skin: "web_blank"
+      skin: "dark_tech"
     front: |
-      <div style="color:#333333; font-size:13px;">
+      <div style="color:#e6e9f0; font-size:15px;">
         <b>{{word}}</b>
-        {{#if phonetic}}<span style="color:#70757A;"> /{{phonetic}}/</span>{{/if}}
+        {{#if phonetic}}<span style="color:#9aa3b5; font-size:12px;"> /{{phonetic}}/</span>{{/if}}
       </div>
     back: |
-      <div style="color:#333333; font-size:12px; line-height:1.4;">
+      <div style="color:#e6e9f0; font-size:13px; line-height:1.6;">
         <div>{{meaning}}</div>
-        {{#if example}}<div style="color:#555555; margin-top:3px; font-style:italic;">{{example}}</div>{{/if}}
+        {{#if example}}<div style="color:#9aa3b5; margin-top:6px;"><i>{{example}}</i></div>{{/if}}
       </div>
 
   cmd_cheat:
     style:
-      skin: "system_notify"
+      skin: "dark_tech"
     front: |
-      <div style="color:#3C4043; font-size:12px;">
-        <b>{{command}}</b>
-        {{#if purpose}}<span style="color:#70757A;"> — {{purpose}}</span>{{/if}}
+      <div style="color:#e6e9f0; font-size:13px;">
+        <b style="color:#34d399;">{{command}}</b>
+        {{#if purpose}}<span style="color:#9aa3b5;"> — {{purpose}}</span>{{/if}}
       </div>
     back: |
-      <div style="color:#3C4043; font-size:12px; line-height:1.4;">
-        <div><b>用法：</b>{{example}}</div>
-        {{#if note}}<div style="color:#2b579a; margin-top:3px;">{{note}}</div>{{/if}}
+      <div style="color:#e6e9f0; font-size:13px; line-height:1.6;">
+        <div><span style="color:#34d399;"><b>用法</b></span> {{example}}</div>
+        {{#if note}}<div style="color:#fbbf24; margin-top:6px;">{{note}}</div>{{/if}}
       </div>
 
   capture:
     style:
-      skin: "system_notify"
+      skin: "dark_tech"
     front: |
-      <div style="color:#333333; font-size:12px;">
-        <b>[摘录]</b> {{title}}
+      <div style="color:#e6e9f0; font-size:13px;">
+        <span style="color:#38bdf8;"><b>[摘录]</b></span> {{title}}
       </div>
     back: |
-      <div style="color:#333333; font-size:12px; line-height:1.4;">
+      <div style="color:#9aa3b5; font-size:13px; line-height:1.7;">
         {{content}}
+      </div>
+
+  abbr:
+    style:
+      skin: "dark_tech"
+    front: |
+      <div style="color:#e6e9f0; font-size:22px;">
+        {{#if cat_label}}<span style="font-size:11px; color:{{cat_color}}; background-color:{{cat_bg}};">&nbsp;{{cat_label}}&nbsp;</span>&nbsp;{{/if}}<b>{{abbr}}</b>{{#if zh}}<span style="color:#9aa3b5; font-size:12px;"> · {{zh}}</span>{{/if}}
+      </div>
+    back: |
+      <div style="color:#e6e9f0; font-size:13px; line-height:1.7;">
+        <div>{{#if cat_label}}<span style="font-size:11px; color:{{cat_color}}; background-color:{{cat_bg}};">&nbsp;{{cat_label}}&nbsp;</span> {{/if}}<span style="font-size:20px;"><b>{{zh}}</b></span></div>
+        {{#if full}}<div style="color:#38bdf8; font-size:13px; margin-top:4px;">{{full}}</div>{{/if}}
+        {{#if note}}<div style="color:#9aa3b5; font-size:13px; margin-top:8px;">{{note}}</div>{{/if}}
       </div>

@@ -14,6 +14,14 @@ _TAG_RE = re.compile(r"<[^>]+>")
 _BR_RE = re.compile(r"<br\s*/?>", re.IGNORECASE)
 _NULLISH = {"", "nan", "none", "null"}
 
+# 分类徽标配色（缩写速记卡片的 cat 字段：concept/reg/clk/bus）
+CATEGORY_STYLES = {
+    "concept": {"label": "GPIO 概念", "color": "#38bdf8", "bg": "#1b3446"},
+    "reg": {"label": "GPIO 寄存器", "color": "#34d399", "bg": "#1a3a33"},
+    "clk": {"label": "时钟源", "color": "#fbbf24", "bg": "#3a3320"},
+    "bus": {"label": "总线与辅助", "color": "#f472b6", "bg": "#392331"},
+}
+
 
 def clean_value(value) -> str:
     """过滤 None / NaN / 空串等缺失值"""
@@ -45,13 +53,13 @@ class TemplateEngine:
         tpl = self._templates.get(template_id)
         if tpl is None:
             return self._fallback_front(fields)
-        return self._render(tpl.get("front", ""), fields)
+        return self._render(tpl.get("front", ""), self._prepare_fields(fields))
 
     def render_back(self, template_id: str, fields: dict) -> str:
         tpl = self._templates.get(template_id)
         if tpl is None:
             return self._fallback_back(fields)
-        return self._render(tpl.get("back", ""), fields)
+        return self._render(tpl.get("back", ""), self._prepare_fields(fields))
 
     def front_plain_text(self, template_id: str, fields: dict) -> str:
         """把渲染后的正面 HTML 还原为纯文本，用于生成卡片哈希"""
@@ -73,19 +81,36 @@ class TemplateEngine:
         resolved = {
             "skin": skin_name,
             "bg_color": skin.get("bg_color", "#FFFFE1"),
+            "bg_gradient": skin.get("bg_gradient"),
             "border_color": skin.get("border_color"),
             "font_family": skin.get("font_family", "Microsoft YaHei"),
+            "radius": skin.get("radius", 0),
+            "text_color": skin.get("text_color", "#333333"),
+            "muted_color": skin.get("muted_color", "#666666"),
+            "accent_color": skin.get("accent_color", "#2b579a"),
             "text_bg_color": skin.get("text_bg_color"),
         }
-        if style.get("bg_color"):
-            resolved["bg_color"] = style["bg_color"]
+        for key in (
+            "bg_color", "bg_gradient", "font_family", "radius",
+            "text_color", "muted_color", "accent_color", "text_bg_color",
+        ):
+            if key in style and style[key] not in (None, ""):
+                resolved[key] = style[key]
         if "border_color" in style:
             resolved["border_color"] = style["border_color"]
-        if style.get("font_family"):
-            resolved["font_family"] = style["font_family"]
-        if style.get("text_bg_color"):
-            resolved["text_bg_color"] = style["text_bg_color"]
         return resolved
+
+    @staticmethod
+    def _prepare_fields(fields: dict) -> dict:
+        """注入分类徽标的派生字段（标签/前景色/底色），供模板直接引用"""
+        prepared = dict(fields or {})
+        category = clean_value(prepared.get("cat")).lower()
+        palette = CATEGORY_STYLES.get(category)
+        if palette:
+            prepared.setdefault("cat_label", palette["label"])
+            prepared["cat_color"] = palette["color"]
+            prepared["cat_bg"] = palette["bg"]
+        return prepared
 
     def _render(self, source: str, fields: dict) -> str:
         def _if_repl(match):
