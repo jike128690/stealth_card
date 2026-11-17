@@ -1,0 +1,29 @@
+# StealthCard 全局配置：外观、热键、复习间隔、防投屏开关
+# 修改保存后 1 秒内自动热重载（热键绑定修改除外，需重启程序生效）
+
+appearance:
+  default_skin: excel_comment      # 全局默认皮肤：excel_comment / web_blank / system_notify
+  width: 300                       # 默认宽度锁定 300 像素
+  collapsed_height: 45             # 折叠态高度 45 像素
+  expanded_height_min: 230         # 展开态最小高度
+  expanded_height_max: 450         # 展开态最大高度
+  window_opacity: 0.9              # 初始不透明度（运行时 Alt+[ / Alt+] 可调，0.25–1.0）
+  margin_right: 30                 # 距屏幕右缘像素
+  margin_bottom: 70                # 距屏幕下缘像素
+
+hotkeys:                           # pynput 组合键语法；两键组合，Alt+字母避开常用快捷键
+  toggle_expand: "<alt>+o"              # 折叠时展开背面，展开时标记已读并下一张
+  next_card: "<alt>+j"                  # 下一张卡片
+  prev_card: "<alt>+k"                  # 上一张卡片
+  mark_unfamiliar: "<alt>+u"            # 标记生疏
+  quick_capture: "<alt>+c"              # 剪贴板划词摘录
+  boss_key: "<alt>+b"                   # 老板键显隐
+  opacity_up: "<alt>+]"                 # 提高不透明度（每次 +5%）
+  opacity_down: "<alt>+["               # 降低不透明度（每次 -5%）
+
+behavior:
+  intervals_minutes: [10, 720, 4320]  # 熟练度 0/1/2 对应的下次复习间隔（分钟）
+  capture_sheet: capture           # 划词摘录写入的工作表（同时作为模板 ID）
+
+security:
+  anti_capture: true               # 防投屏与防截图隔离

@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 虚拟环境
+.venv/
+venv/
+build_env/
+env/
+
+# 构建产物
+build/
+dist/
+build_log.txt
+
+# 运行期状态（首启自动生成）
+data/progress.db
+data/progress.db-*
+data/app.log
+data/app.log.*
+data/window_pos.json
+
+# 本地备份
+*.bak
+*.bak-*
+*.bak[0-9]-*
+
+# 编辑器与系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 工具临时目录
+.qwen/
